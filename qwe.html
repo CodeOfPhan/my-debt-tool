@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รู้ทันหนี้ - เครื่องคำนวณสินเชื่อ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #b8c6db;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #e1e8ed;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+            color: #b8c6db;
+            font-size: 14px;
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            font-weight: 600;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status.approved {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+            color: #1a5e20;
+        }
+
+        .status.rejected {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: #ffffff;
+        }
+
+        .error-message {
+            background: rgba(255, 65, 108, 0.2);
+            color: #ff6b9d;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+        }
+
+        .formula-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #b8c6db;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .formula-info h4 {
+            color: #4facfe;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 รู้ทันหนี้</h1>
+            <p>เครื่องคำนวณการอนุมัติสินเชื่อ</p>
+        </div>
+
+        <form id="loanForm">
+            <div class="form-group">
+                <label for="loanAmount">วงเงินกู้ (บาท)</label>
+                <input type="number" id="loanAmount" name="loanAmount" 
+                       placeholder="เช่น 5,000,000" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="monthlyIncome">รายได้ต่อเดือน (บาท)</label>
+                <input type="number" id="monthlyIncome" name="monthlyIncome" 
+                       placeholder="เช่น 100,000" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="existingDebt">ภาระหนี้เดิมต่อเดือน (บาท)</label>
+                <input type="number" id="existingDebt" name="existingDebt" 
+                       placeholder="เช่น 35,000" min="0" value="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="age">อายุผู้กู้ (ปี)</label>
+                <input type="number" id="age" name="age" 
+                       placeholder="เช่น 35" min="25" max="64" required>
+            </div>
+
+            <button type="submit" class="calculate-btn">คำนวณสินเชื่อ</button>
+        </form>
+
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <div id="results" class="results" style="display: none;">
+            <div class="result-item">
+                <span class="result-label">จำนวนปีที่กู้:</span>
+                <span class="result-value" id="loanYears"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">จำนวนงวด:</span>
+                <span class="result-value" id="totalInstallments"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">ดอกเบี้ยทั้งหมด:</span>
+                <span class="result-value" id="totalInterest"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">ดอกเบี้ยต่อเดือน:</span>
+                <span class="result-value" id="monthlyInterest"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">เงินต้นต่อเดือน:</span>
+                <span class="result-value" id="monthlyPrincipal"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">ผ่อนชำระต่อเดือน:</span>
+                <span class="result-value" id="monthlyPayment"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">ภาระหนี้รวม:</span>
+                <span class="result-value" id="totalDebt"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">เกณฑ์สินเชื่อ:</span>
+                <span class="result-value" id="creditCriteria"></span>
+            </div>
+        </div>
+
+        <div id="status" class="status" style="display: none;"></div>
+
+        <div class="formula-info">
+            <h4>📊 ข้อมูลการคำนวณ</h4>
+            <p><strong>อัตราดอกเบี้ย:</strong> 5.925% ต่อปี</p>
+            <p><strong>เกณฑ์อนุมัติ:</strong> ภาระหนี้รวม ≤ 70% ของรายได้</p>
+            <p><strong>อายุขั้นต่ำ:</strong> 25 ปี | <strong>อายุสูงสุด:</strong> 64 ปี</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loanForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // รับค่าจากฟอร์ม
+            const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+            const monthlyIncome = parseFloat(document.getElementById('monthlyIncome').value);
+            const existingDebt = parseFloat(document.getElementById('existingDebt').value) || 0;
+            const age = parseInt(document.getElementById('age').value);
+            
+            // ตรวจสอบข้อมูล
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'none';
+            
+            if (age < 25) {
+                showError('อายุต้องไม่น้อยกว่า 25 ปี');
+                return;
+            }
+            
+            if (age > 64) {
+                showError('อายุต้องไม่เกิน 64 ปี');
+                return;
+            }
+            
+            if (loanAmount <= 0 || monthlyIncome <= 0) {
+                showError('กรุณากรอกข้อมูลให้ถูกต้อง');
+                return;
+            }
+            
+            // คำนวณ
+            const interestRate = 0.05925; // 5.925%
+            const maxAge = 64;
+            const loanYears = maxAge - age;
+            const totalInstallments = loanYears * 12;
+            
+            if (loanYears <= 0) {
+                showError('อายุเกินเกณฑ์การให้กู้');
+                return;
+            }
+            
+            // คำนวณดอกเบี้ย
+            const totalInterest = loanAmount * interestRate * loanYears;
+            const monthlyInterest = totalInterest / totalInstallments;
+            const monthlyPrincipal = loanAmount / totalInstallments;
+            const monthlyPayment = monthlyInterest + monthlyPrincipal;
+            
+            // คำนวณภาระหนี้รวม
+            const totalDebt = existingDebt + monthlyPayment;
+            const debtToIncomeRatio = totalDebt / monthlyIncome;
+            const creditCriteria = debtToIncomeRatio * 100;
+            
+            // แสดงผล
+            displayResults({
+                loanYears,
+                totalInstallments,
+                totalInterest,
+                monthlyInterest,
+                monthlyPrincipal,
+                monthlyPayment,
+                totalDebt,
+                creditCriteria
+            });
+            
+            // แสดงสถานะ
+            const statusDiv = document.getElementById('status');
+            statusDiv.style.display = 'block';
+            
+            if (creditCriteria <= 70) {
+                statusDiv.className = 'status approved';
+                statusDiv.textContent = '✅ อนุมัติสินเชื่อ';
+            } else {
+                statusDiv.className = 'status rejected';
+                statusDiv.textContent = '❌ ปฏิเสธสินเชื่อ';
+            }
+        });
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('status').style.display = 'none';
+        }
+        
+        function displayResults(data) {
+            document.getElementById('loanYears').textContent = data.loanYears + ' ปี';
+            document.getElementById('totalInstallments').textContent = data.totalInstallments.toLocaleString() + ' งวด';
+            document.getElementById('totalInterest').textContent = data.totalInterest.toLocaleString('th-TH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + ' บาท';
+            document.getElementById('monthlyInterest').textContent = data.monthlyInterest.toLocaleString('th-TH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + ' บาท';
+            document.getElementById('monthlyPrincipal').textContent = data.monthlyPrincipal.toLocaleString('th-TH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + ' บาท';
+            document.getElementById('monthlyPayment').textContent = data.monthlyPayment.toLocaleString('th-TH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + ' บาท';
+            document.getElementById('totalDebt').textContent = data.totalDebt.toLocaleString('th-TH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + ' บาท';
+            document.getElementById('creditCriteria').textContent = data.creditCriteria.toFixed(2) + '%';
+            
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        // ฟังก์ชันสำหรับจัดรูปแบบตัวเลขในช่องกรอกข้อมูล
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                // ลบข้อความผิดพลาด
+                document.getElementById('errorMessage').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
